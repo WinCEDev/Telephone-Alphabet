@@ -1,6 +1,10 @@
 # Telephone Alphabet
 This is a simple utility to quickly convert between regular words and their phonetic form. It is useful for reliably relaying information over the phone, such as website addresses, usernames and passwords.
 
+![Screenshot showing the application with the window arranged horizontally. The text TELEPHONE ALPHABET is entered as the input.](https://raw.githubusercontent.com/WinCEDev/Telephone-Alphabet/main/Screenshots/CAPT0001.png?token=GHSAT0AAAAAAB6KTFRATZI4S4X3OIHW7VBIY7AJXEQ)
+
+![Screenshot showing the application with the window arranged vertically. The text TELEPHONE ALPHABET is entered as the input.](https://raw.githubusercontent.com/WinCEDev/Telephone-Alphabet/main/Screenshots/CAPT0002.png?token=GHSAT0AAAAAAB6KTFRAHVVJCW362Z7JQDK6Y7AJXMA)
+
 ## Getting Started
 When you open the application, the main interface will appear. You can enter text to be converted in the upper text field. You can use the toolbar to quickly copy, paste or undo.
 
