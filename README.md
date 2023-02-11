@@ -22,3 +22,8 @@ You can specify an alternate font and size. To do this, select _Edit_ and then _
 
 ### Zooming In And Out
 To zoom in and out without changing the stored text size, press _Ctrl+Plus_ and _Ctrl+Minus_, or alternatively use the menu at _View_, _Zoom_, _Zoom In_ and _Zoom Out_. Here you can also reset the zoom level back to default.
+
+## Links
+
+- [HPC:Factor Forum Thread](https://www.hpcfactor.com/forums/forums/thread-view.asp?tid=20857)
+- [HPC:Factor SCL](https://www.hpcfactor.com/scl/2051/WinCEDev/Telephone_Alphabet/version_0.9.0-beta)
