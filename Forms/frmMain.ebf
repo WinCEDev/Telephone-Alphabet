@@ -2,7 +2,6 @@ VERSION 5.00
 Object = "{A32A88B3-817C-11D1-A762-00AA0044064C}#1.0#0"; "mscecomdlg.dll"
 Object = "{BE67ABF5-0137-11D2-9B8A-00C04FAD5AEC}#1.0#0"; "mscecommandbar.dll"
 Object = "{25C953A7-5464-11D1-A714-00AA0044064C}#1.0#0"; "MSCEFILE.DLL"
-Object = "{E491F001-98EC-11D1-9B3D-00C04FAD5AEC}#1.0#0"; "msceimagelist.dll"
 Begin VB.Form MainForm 
    BorderStyle     =   0  'None
    Caption         =   "Telephone Alphabet"
@@ -22,7 +21,7 @@ Begin VB.Form MainForm
       _cy             =   1400
    End
    Begin CEComDlgCtl.CommonDialog CommonDialog 
-      Left            =   2520
+      Left            =   2040
       Top             =   4440
       _cx             =   847
       _cy             =   847
@@ -53,14 +52,6 @@ Begin VB.Form MainForm
       Top             =   4440
       _cx             =   1000
       _cy             =   1000
-   End
-   Begin CEImageListCtl.ImageList ImageList 
-      Left            =   1920
-      Top             =   4440
-      _cx             =   990
-      _cy             =   990
-      ImageWidth      =   16
-      ImageHeight     =   16
    End
    Begin CommandbarLib.CommandBar CommandBar 
       Height          =   345
@@ -247,19 +238,21 @@ Private Const RES_ERR_MISSINGTOOLBARBITMAP          As Long = 131
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 'ToolBar icon index constants.
 
-Private Const TOOLBAR_ICON_SAVE                     As Long = 0
+Private Const TASKBAR_ICON_SMALL                    As Long = 0
 
-Private Const TOOLBAR_ICON_CUT                      As Long = 1
+Private Const TOOLBAR_ICON_SAVE                     As Long = 1
 
-Private Const TOOLBAR_ICON_COPY                     As Long = 2
+Private Const TOOLBAR_ICON_CUT                      As Long = 2
 
-Private Const TOOLBAR_ICON_PASTE                    As Long = 3
+Private Const TOOLBAR_ICON_COPY                     As Long = 3
 
-Private Const TOOLBAR_ICON_UNDO                     As Long = 4
+Private Const TOOLBAR_ICON_PASTE                    As Long = 4
 
-Private Const TOOLBAR_ICON_ARRANGEHORIZONTALLY      As Long = 5
+Private Const TOOLBAR_ICON_UNDO                     As Long = 5
 
-Private Const TOOLBAR_ICON_ARRANGEVERTICALLY        As Long = 6
+Private Const TOOLBAR_ICON_ARRANGEHORIZONTALLY      As Long = 6
+
+Private Const TOOLBAR_ICON_ARRANGEVERTICALLY        As Long = 7
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 'Class-level variables.
@@ -281,6 +274,10 @@ Private PlayedUnknownKeySound                       As Boolean 'This is so we on
 Private LanguageFiles()                             As String 'Represents loaded language files.
 
 Private Loaded                                      As Boolean 'This is so we can detect the form has fully loaded so we don't erroneously load things too early.
+
+Private ImageList                                   As Long 'Holds the image list handle used by this form.
+
+Private TaskbarIcon                                 As Long 'Holds the taskbar icon handle.
 
 'This function adjusts the zoom level.
 Private Function AdjustZoomLevel(ByVal Direction As Long) As Long
@@ -393,12 +390,7 @@ End Function
 'This initializes the CommandBar.
 Private Sub InitializeCommandBar()
 
-    Dim strToolbarImage As String
-
-    strToolbarImage = PathHelpers_AddPathSeparator(App.Path) & "toolbar.bmp"
-
-    ImageList.Add strToolbarImage
-    CommandBar.ImageList = ImageList.hImageList
+    CommandBar.ImageList = ImageList
 
     Dim objMenuBar As CommandBarMenuBar
 
@@ -875,6 +867,12 @@ Private Sub Form_Load()
         App.End
     End If
     
+    'Load image list.
+    ImageList = ImageListEx_Create(16, 16, ILC_COLOR Or ILC_MASK)
+    ImageListEx_AddMasked ImageList, PathHelpers_AddPathSeparator(App.Path) & "icons_small.bmp", vbMagenta
+    
+    TaskbarIcon = TaskbarIcon_Let(hwnd, ImageList, TASKBAR_ICON_SMALL, tbSmallIcon)
+    
     InitializeCommandBar
     InitializeSaveAsDialog
     
@@ -962,6 +960,9 @@ Private Sub Form_Unload(ByVal Cancel As Integer)
     SaveSetting App.Title, "Settings", "FontName", txtInput.Font.Name
     SaveSetting App.Title, "Settings", "FontBold", txtInput.Font.Bold
     SaveSetting App.Title, "Settings", "FontItalic", txtInput.Font.Italic
+    
+    ImageListEx_Destroy ImageList
+    TaskbarIcon_Destroy TaskbarIcon
     
 End Sub
 
@@ -1059,4 +1060,6 @@ End Sub
 Private Sub txtOutput_KeyUp(ByVal KeyCode As Integer, ByVal Shift As Integer)
     PlayedUnknownKeySound = False
 End Sub
+
+
 
