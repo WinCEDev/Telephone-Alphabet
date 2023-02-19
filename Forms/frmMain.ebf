@@ -271,7 +271,9 @@ Private OldLength                                   As Long 'Contains the old le
 
 Private PlayedUnknownKeySound                       As Boolean 'This is so we only play the system sound once if the user keeps holding an unknown key.
 
-Private LanguageFiles()                             As String 'Represents loaded language files.
+Private LanguageFiles                               As Variant 'Represents loaded language files.
+
+Private SelectedLanguage                            As Long 'Represents the index of the selected language.
 
 Private Loaded                                      As Boolean 'This is so we can detect the form has fully loaded so we don't erroneously load things too early.
 
@@ -332,7 +334,7 @@ Private Function FindLanguageFiles() As Boolean
         
         ReDim LanguageFiles(lngCount)
         
-        LanguageFiles(lngCount) = strPath
+        LanguageFiles(lngCount) = Phonetic_Create(File, PathHelpers_AddPathSeparator(App.Path) & strPath, PathHelpers_RemoveExtension(strPath))
     
         Do While True
             strPath = FileSystem.Dir
@@ -340,7 +342,7 @@ Private Function FindLanguageFiles() As Boolean
             If LenB(strPath) <> 0 Then
                 lngCount = lngCount + 1
                 ReDim Preserve LanguageFiles(lngCount)
-                LanguageFiles(lngCount) = strPath
+                LanguageFiles(lngCount) = Phonetic_Create(File, PathHelpers_AddPathSeparator(App.Path) & strPath, PathHelpers_RemoveExtension(strPath))
             Else
 
                 Exit Do
@@ -348,7 +350,7 @@ Private Function FindLanguageFiles() As Boolean
             End If
 
         Loop
-
+        
         FindLanguageFiles = True
 
     End If
@@ -501,7 +503,7 @@ Private Sub InitializeLanguageCombo()
     Dim i As Long
     
     For i = 0 To UBound(LanguageFiles)
-        comCombo.AddItem PathHelpers_RemoveExtension(LanguageFiles(i))
+        comCombo.AddItem LanguageFiles(i)(phLanguage)
     Next
 
     comCombo.Style = cbrComboDropDownList
@@ -692,7 +694,7 @@ Private Sub RevalidateInput(ByVal InputSource As String, _
 
         Dim strWord As String
 
-        strWord = Phonetic_FromChar(AscW(Mid(InputSource, i, 1)))
+        strWord = Phonetic_FromChar(LanguageFiles(SelectedLanguage), AscW(Mid(InputSource, i, 1)))
 
         If LenB(strWord) <> 0 Then
             strResult = strResult & Mid(InputSource, i, 1)
@@ -754,9 +756,9 @@ Private Sub CommandBar_ComboBoxClick(ByRef ComboBox As CommandbarLib.CommandBarC
 
         Case "Language"
         
-            If ComboBox.Text <> Phonetic_Language Then
+            If ComboBox.Text <> LanguageFiles(SelectedLanguage)(phLanguage) Then
             
-                Phonetic_ReadFile File, PathHelpers_AddPathSeparator(App.Path) & LanguageFiles(ComboBox.ListIndex), ComboBox.Text
+                SelectedLanguage = ComboBox.ListIndex
             
                 If LenB(txtInput.Text) <> 0 Then
 
@@ -1005,7 +1007,7 @@ Private Sub txtInput_KeyPress(ByRef KeyAscii As Integer) 'By default, eVB declar
 
             Dim strResult As Long
 
-            strResult = Phonetic_FromChar(KeyAscii)
+            strResult = Phonetic_FromChar(LanguageFiles(SelectedLanguage), KeyAscii)
                 
             If LenB(strResult) <> 0 Then
                 WasTyped = True
