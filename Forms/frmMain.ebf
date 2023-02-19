@@ -1,7 +1,7 @@
 VERSION 5.00
 Object = "{A32A88B3-817C-11D1-A762-00AA0044064C}#1.0#0"; "mscecomdlg.dll"
-Object = "{BE67ABF5-0137-11D2-9B8A-00C04FAD5AEC}#1.0#0"; "mscecommandbar.dll"
 Object = "{25C953A7-5464-11D1-A714-00AA0044064C}#1.0#0"; "MSCEFILE.DLL"
+Object = "{BE67ABF5-0137-11D2-9B8A-00C04FAD5AEC}#1.0#0"; "mscecommandbar.dll"
 Begin VB.Form MainForm 
    BorderStyle     =   0  'None
    Caption         =   "Telephone Alphabet"
@@ -236,9 +236,14 @@ Private Const RES_ERR_MISSINGLANGUAGEFILES          As Long = 130
 Private Const RES_ERR_MISSINGTOOLBARBITMAP          As Long = 131
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-'ToolBar icon index constants.
+'Taskbar icon index constants.
 
-Private Const TASKBAR_ICON_SMALL                    As Long = 0
+Private Const TASKBAR_ICON_SMALL                    As Long = 0 'In "icons_small.bmp"
+
+Private Const TASKBAR_ICON_LARGE                    As Long = 0 'In "icons_large.bmp"
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'ToolBar icon index constants.
 
 Private Const TOOLBAR_ICON_SAVE                     As Long = 1
 
@@ -277,9 +282,13 @@ Private SelectedLanguage                            As Long 'Represents the inde
 
 Private Loaded                                      As Boolean 'This is so we can detect the form has fully loaded so we don't erroneously load things too early.
 
-Private ImageList                                   As Long 'Holds the image list handle used by this form.
+Private SmallImageList                              As Long 'Holds the small image list handle used by this form.
 
-Private TaskbarIcon                                 As Long 'Holds the taskbar icon handle.
+Private SmallTaskbarIcon                            As Long 'Holds the small taskbar icon handle.
+
+Private LargeImageList                              As Long 'Holds the large image list handle used by this form.
+
+Private LargeTaskbarIcon                            As Long 'Holds the large taskbar icon handle.
 
 'This function adjusts the zoom level.
 Private Function AdjustZoomLevel(ByVal Direction As Long) As Long
@@ -337,6 +346,7 @@ Private Function FindLanguageFiles() As Boolean
         LanguageFiles(lngCount) = Phonetic_Create(File, PathHelpers_AddPathSeparator(App.Path) & strPath, PathHelpers_RemoveExtension(strPath))
     
         Do While True
+        
             strPath = FileSystem.Dir
 
             If LenB(strPath) <> 0 Then
@@ -392,7 +402,7 @@ End Function
 'This initializes the CommandBar.
 Private Sub InitializeCommandBar()
 
-    CommandBar.ImageList = ImageList
+    CommandBar.ImageList = SmallImageList
 
     Dim objMenuBar As CommandBarMenuBar
 
@@ -436,6 +446,11 @@ Private Sub InitializeCommandBar()
 
     objMenuItem.SubItems.Add , "ArrangeHorizontally", LoadResString(RES_MENUBAR_VIEW_ARRANGEHORIZONTALLY)
     objMenuItem.SubItems.Add , "ArrangeVertically", LoadResString(RES_MENUBAR_VIEW_ARRANGEVERTICALLY)
+    
+    objMenuItem.SubItems.Add , , , cbrMenuSeparator
+        
+    objMenuItem.SubItems.Add , "AutoUpdate", "Update Automatically"
+    objMenuItem.SubItems.Add , "Refresh", "Refresh" & vbTab & "F5"
 
     ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     'CommandBar Buttons
@@ -672,6 +687,10 @@ Private Sub MenuOrToolbarAction(ByVal Key As String)
         
             LetArrangement ceArrangeVertically
             
+        Case "Refresh"
+        
+            Revalidate
+            
         Case "Exit"
             App.End
 
@@ -750,6 +769,18 @@ Private Sub CommandBar_ButtonClick(ByRef Button As CommandbarLib.CommandBarButto
     MenuOrToolbarAction Button.Key
 End Sub
 
+Private Sub Revalidate()
+
+    Dim strInput  As String
+
+    Dim strOutput As String
+            
+    RevalidateInput txtInput.Text, strInput, strOutput
+
+    txtInput.Text = strInput
+    txtOutput.Text = strOutput
+End Sub
+
 Private Sub CommandBar_ComboBoxClick(ByRef ComboBox As CommandbarLib.CommandBarComboBox)
 
     Select Case ComboBox.Key
@@ -762,14 +793,7 @@ Private Sub CommandBar_ComboBoxClick(ByRef ComboBox As CommandbarLib.CommandBarC
             
                 If LenB(txtInput.Text) <> 0 Then
 
-                    Dim strInput  As String
-
-                    Dim strOutput As String
-            
-                    RevalidateInput txtInput.Text, strInput, strOutput
-
-                    txtInput.Text = strInput
-                    txtOutput.Text = strOutput
+                    Revalidate
 
                 End If
                 
@@ -870,10 +894,14 @@ Private Sub Form_Load()
     End If
     
     'Load image list.
-    ImageList = ImageListEx_Create(16, 16, ILC_COLOR Or ILC_MASK)
-    ImageListEx_AddMasked ImageList, PathHelpers_AddPathSeparator(App.Path) & "icons_small.bmp", vbMagenta
+    SmallImageList = ImageListEx_Create(16, 16, ILC_COLOR Or ILC_MASK)
+    ImageListEx_AddMasked SmallImageList, PathHelpers_AddPathSeparator(App.Path) & "icons_small.bmp", vbMagenta
     
-    TaskbarIcon = TaskbarIcon_Let(hwnd, ImageList, TASKBAR_ICON_SMALL, tbSmallIcon)
+    LargeImageList = ImageListEx_Create(32, 32, ILC_COLOR Or ILC_MASK)
+    ImageListEx_AddMasked LargeImageList, PathHelpers_AddPathSeparator(App.Path) & "icons_large.bmp", vbMagenta
+    
+    SmallTaskbarIcon = TaskbarIcon_Let(hwnd, SmallImageList, TASKBAR_ICON_SMALL, tbSmallIcon)
+    LargeTaskbarIcon = TaskbarIcon_Let(hwnd, LargeImageList, TASKBAR_ICON_LARGE, tbLargeIcon)
     
     InitializeCommandBar
     InitializeSaveAsDialog
@@ -963,8 +991,10 @@ Private Sub Form_Unload(ByVal Cancel As Integer)
     SaveSetting App.Title, "Settings", "FontBold", txtInput.Font.Bold
     SaveSetting App.Title, "Settings", "FontItalic", txtInput.Font.Italic
     
-    ImageListEx_Destroy ImageList
-    TaskbarIcon_Destroy TaskbarIcon
+    ImageListEx_Destroy SmallImageList
+    ImageListEx_Destroy LargeImageList
+    TaskbarIcon_Destroy SmallTaskbarIcon
+    TaskbarIcon_Destroy LargeTaskbarIcon
     
 End Sub
 
@@ -990,7 +1020,7 @@ Private Sub txtInput_Change()
         txtOutput.Text = strOutput
 
         txtInput.SelStart = lngOldSelStart
-        txtOutput.SelStart = Len(txtOutput.Text) 'Set cursor at the end so the output 'scrolls' with our typing.
+        txtOutput.SelStart = Len(txtOutput.Text) 'Set cursor at the end so the ou tput 'scrolls' with our typing.
     
     End If
 

@@ -13,13 +13,17 @@ Public Function Phonetic_Create(ByRef FileObj As File, _
 
     FileObj.Open FilePath, fsModeInput, fsAccessRead, fsLockWrite
 
-    Dim strContents As String
+    Dim varContents As String
 
-    strContents = Split(FileObj.Input(FileObj.LOF), vbNewLine)
+    varContents = FileObj.Input(FileObj.LOF)
+    
+    FileObj.Close
+    
+    varContents = Split(varContents, vbNewLine)
     
     Dim lngUpperBound As Long
 
-    lngUpperBound = UBound(strContents)
+    lngUpperBound = UBound(varContents)
     
     Dim varIndex As Variant 'Contains Unicode character values.
 
@@ -29,13 +33,12 @@ Public Function Phonetic_Create(ByRef FileObj As File, _
     ReDim varValue(lngUpperBound)
 
     Dim i As Long
+    Dim strValue As String
     
-    For i = 0 To UBound(strContents)
-        varIndex(i) = CLng(Left(strContents(i), InStr(strContents(i), vbTab) - 1))
-        varValue(i) = Right(strContents(i), Len(strContents(i)) - InStrRev(strContents(i), vbTab))
+    For i = 0 To UBound(varContents)
+        varIndex(i) = CLng(Left(varContents(i), InStr(varContents(i), vbTab) - 1))
+        varValue(i) = Right(varContents(i), Len(varContents(i)) - InStrRev(varContents(i), vbTab))
     Next
-
-    FileObj.Close
     
     Phonetic_Create = Array(Language, varIndex, varValue)
 
