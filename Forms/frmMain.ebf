@@ -238,9 +238,9 @@ Private Const RES_ERR_MISSINGTOOLBARBITMAP          As Long = 131
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 'Taskbar icon index constants.
 
-Private Const TASKBAR_ICON_SMALL                    As Long = 0 'In "icons_small.bmp"
+Private Const TASKBAR_ICON_SMALL                    As Long = 0 'From "icons_small.bmp".
 
-Private Const TASKBAR_ICON_LARGE                    As Long = 0 'In "icons_large.bmp"
+Private Const TASKBAR_ICON_LARGE                    As Long = 0 'From "icons_large.bmp".
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 'ToolBar icon index constants.
@@ -255,9 +255,16 @@ Private Const TOOLBAR_ICON_PASTE                    As Long = 4
 
 Private Const TOOLBAR_ICON_UNDO                     As Long = 5
 
-Private Const TOOLBAR_ICON_ARRANGEHORIZONTALLY      As Long = 6
+Private Const TOOLBAR_ICON_REFRESH                  As Long = 6
 
-Private Const TOOLBAR_ICON_ARRANGEVERTICALLY        As Long = 7
+Private Const TOOLBAR_ICON_ARRANGEHORIZONTALLY      As Long = 7
+
+Private Const TOOLBAR_ICON_ARRANGEVERTICALLY        As Long = 8
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'Settings constants.
+
+Private Const SETTINGS_KEY                          As String = "Settings"
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 'Class-level variables.
@@ -265,6 +272,8 @@ Private Const TOOLBAR_ICON_ARRANGEVERTICALLY        As Long = 7
 Private ZoomLevel                                   As Long 'Contains the current zoom level.
 
 Private Arrangement                                 As Long 'Contains the current TextBox arrangement.
+
+Private AutoUpdate                                  As Boolean 'Should the output automatically update?
 
 Private ActualFontSize                              As Long 'Contains the actual font size (without zoom factor).
 
@@ -473,6 +482,13 @@ Private Sub InitializeCommandBar()
 
     Set objButton = CommandBar.Controls.Add(cbrButton)
     objButton.Style = cbrSeparator
+    
+    Set objButton = CommandBar.Controls.Add(cbrButton, "Refresh")
+    'objButton.ToolTip = LoadResString(RES_TOOLBAR_refresh) 'TODO: Localize.
+    objButton.Image = TOOLBAR_ICON_REFRESH
+
+    Set objButton = CommandBar.Controls.Add(cbrButton)
+    objButton.Style = cbrSeparator
 
     Set objButton = CommandBar.Controls.Add(cbrButton, "Cut")
     objButton.ToolTip = LoadResString(RES_TOOLBAR_CUT)
@@ -541,6 +557,18 @@ Private Sub LetActualFontSize(ByVal NewActualFontSize As Long)
     ActualFontSize = NewActualFontSize
     txtInput.Font.Size = ActualFontSize * ZoomLevel
     txtOutput.Font.Size = ActualFontSize * ZoomLevel
+End Sub
+
+Private Sub LetAutoUpdateState(ByVal State As Boolean)
+
+    Dim objAutoUpdateMenuItem As CommandbarLib.Item
+
+    Set objAutoUpdateMenuItem = CommandBar.Controls("Menu").Items("View").SubItems("AutoUpdate")
+
+    objAutoUpdateMenuItem.Checked = State
+
+    AutoUpdate = State
+
 End Sub
 
 'This sets the window arrangement (horizontal or vertical).
@@ -665,7 +693,7 @@ Private Sub MenuOrToolbarAction(ByVal Key As String)
             On Error GoTo 0
             
             txtInput.SetFocus
-            SetEditingState True 'txtInput GotFocus doesn't seem to be raised after Font dialog box closes.
+            LetEditingState True 'txtInput_GotFocus doesn't seem to be raised after Font dialog box closes.
             
         Case "ZoomIn"
         
@@ -678,6 +706,10 @@ Private Sub MenuOrToolbarAction(ByVal Key As String)
         Case "ZoomRestoreDefaults"
         
             LetDefaultZoomLevel
+            
+        Case "AutoUpdate"
+        
+            LetAutoUpdateState Not AutoUpdate
 
         Case "ArrangeHorizontally"
         
@@ -751,7 +783,7 @@ Private Sub SaveFile(ByVal FilePath As String)
 End Sub
 
 'This sets the editing state.
-Private Sub SetEditingState(ByVal Editable As Boolean)
+Private Sub LetEditingState(ByVal Editable As Boolean)
 
     CommandBar.Controls("Cut").Enabled = Editable
     CommandBar.Controls("Paste").Enabled = Editable
@@ -800,7 +832,7 @@ Private Sub CommandBar_ComboBoxClick(ByRef ComboBox As CommandbarLib.CommandBarC
                 If Loaded Then
                     'This cannot be done from the (Query)Unload event because the CommandBar will already be destroyed due to a bug.
                     'See: https://www.betaarchive.com/wiki/index.php?title=Microsoft_KB_Archive/254792
-                    SaveSetting App.Title, "Settings", "Language", ComboBox.Text
+                    SaveSetting App.Title, SETTINGS_KEY, "Language", ComboBox.Text
                 End If
             
             End If
@@ -913,7 +945,7 @@ Private Sub Form_Load()
     
     Dim strLanguage As String
 
-    strLanguage = GetSetting(App.Title, "Settings", "Language", "English")
+    strLanguage = GetSetting(App.Title, SETTINGS_KEY, "Language", "English")
         
     Dim comCombo As CommandBarComboBox
 
@@ -937,13 +969,15 @@ Private Sub Form_Load()
     
     'Load settings
     Arrangement = -1 'This is here so we always fully initialize the menu the first time.
-    LetArrangement CLng(GetSetting(App.Title, "Settings", "Arrangement", ceArrangeHorizontally))
+    LetArrangement CLng(GetSetting(App.Title, SETTINGS_KEY, "Arrangement", ceArrangeHorizontally))
     
-    LetActualFontSize GetSetting(App.Title, "Settings", "FontSize", txtInput.Font.Size)
+    LetAutoUpdateState CBool(GetSetting(App.Title, SETTINGS_KEY, "AutoUpdate", True))
+    
+    LetActualFontSize GetSetting(App.Title, SETTINGS_KEY, "FontSize", txtInput.Font.Size)
         
-    CommonDialog.FontName = GetSetting(App.Title, "Settings", "FontName", txtInput.Font.Name)
-    CommonDialog.FontBold = GetSetting(App.Title, "Settings", "FontBold", txtInput.Font.Bold)
-    CommonDialog.FontItalic = GetSetting(App.Title, "Settings", "FontItalic", txtInput.Font.Italic)
+    CommonDialog.FontName = GetSetting(App.Title, SETTINGS_KEY, "FontName", txtInput.Font.Name)
+    CommonDialog.FontBold = GetSetting(App.Title, SETTINGS_KEY, "FontBold", txtInput.Font.Bold)
+    CommonDialog.FontItalic = GetSetting(App.Title, SETTINGS_KEY, "FontItalic", txtInput.Font.Italic)
     
     CommonDialog.FontSize = ActualFontSize
 
@@ -985,11 +1019,12 @@ End Sub
 
 Private Sub Form_Unload(ByVal Cancel As Integer)
 
-    SaveSetting App.Title, "Settings", "Arrangement", Arrangement
-    SaveSetting App.Title, "Settings", "FontSize", ActualFontSize
-    SaveSetting App.Title, "Settings", "FontName", txtInput.Font.Name
-    SaveSetting App.Title, "Settings", "FontBold", txtInput.Font.Bold
-    SaveSetting App.Title, "Settings", "FontItalic", txtInput.Font.Italic
+    SaveSetting App.Title, SETTINGS_KEY, "Arrangement", Arrangement
+    SaveSetting App.Title, SETTINGS_KEY, "AutoUpdate", AutoUpdate
+    SaveSetting App.Title, SETTINGS_KEY, "FontSize", ActualFontSize
+    SaveSetting App.Title, SETTINGS_KEY, "FontName", txtInput.Font.Name
+    SaveSetting App.Title, SETTINGS_KEY, "FontBold", txtInput.Font.Bold
+    SaveSetting App.Title, SETTINGS_KEY, "FontItalic", txtInput.Font.Italic
     
     ImageListEx_Destroy SmallImageList
     ImageListEx_Destroy LargeImageList
@@ -999,75 +1034,83 @@ Private Sub Form_Unload(ByVal Cancel As Integer)
 End Sub
 
 Private Sub txtInput_Change()
-    
-    If WasTyped Then
-        WasTyped = False
-    Else
-    
-        Dim lngSelStart    As Long
-    
-        Dim strInput       As String
 
-        Dim strOutput      As String
+    If AutoUpdate Then
+    
+        If WasTyped Then
+            WasTyped = False
+        Else
+    
+            Dim lngSelStart    As Long
+    
+            Dim strInput       As String
+
+            Dim strOutput      As String
         
-        Dim lngOldSelStart As Long
+            Dim lngOldSelStart As Long
 
-        lngOldSelStart = txtInput.SelStart
+            lngOldSelStart = txtInput.SelStart
     
-        RevalidateInput txtInput.Text, strInput, strOutput
+            RevalidateInput txtInput.Text, strInput, strOutput
 
-        txtInput.Text = strInput
-        txtOutput.Text = strOutput
+            txtInput.Text = strInput
+            txtOutput.Text = strOutput
 
-        txtInput.SelStart = lngOldSelStart
-        txtOutput.SelStart = Len(txtOutput.Text) 'Set cursor at the end so the ou tput 'scrolls' with our typing.
+            txtInput.SelStart = lngOldSelStart
+            txtOutput.SelStart = Len(txtOutput.Text) 'Set cursor at the end so the ou tput 'scrolls' with our typing.
+    
+        End If
     
     End If
 
 End Sub
 
 Private Sub txtInput_GotFocus()
-    SetEditingState True
+    LetEditingState True
 End Sub
 
 Private Sub txtInput_KeyPress(ByRef KeyAscii As Integer) 'By default, eVB declares the KeyAscii value as ByVal, however if changed to ByRef, modifying keystrokes works just as it does in VB6.
 
-    If KeyAscii <> vbKeyBack Then
-        If KeyAscii <> vbKeyEscape Then
+    If AutoUpdate Then
 
-            Dim strResult As Long
+        If KeyAscii <> vbKeyBack Then
+            If KeyAscii <> vbKeyEscape Then
 
-            strResult = Phonetic_FromChar(LanguageFiles(SelectedLanguage), KeyAscii)
+                Dim strResult As Long
+
+                strResult = Phonetic_FromChar(LanguageFiles(SelectedLanguage), KeyAscii)
                 
-            If LenB(strResult) <> 0 Then
-                WasTyped = True
+                If LenB(strResult) <> 0 Then
+                    WasTyped = True
                     
-                If txtInput.SelStart = 0 Then
-                    txtOutput.Text = strResult & " " & txtOutput.Text
-                ElseIf txtInput.SelStart = Len(txtInput.Text) Then
-                    txtOutput.Text = txtOutput.Text & strResult & " "
-                Else
+                    If txtInput.SelStart = 0 Then
+                        txtOutput.Text = strResult & " " & txtOutput.Text
+                    ElseIf txtInput.SelStart = Len(txtInput.Text) Then
+                        txtOutput.Text = txtOutput.Text & strResult & " "
+                    Else
 
-                    Dim lngNextWord As Long
+                        Dim lngNextWord As Long
 
-                    lngNextWord = GetPhoneticWordStart(txtInput.SelStart + 1)
-                    txtOutput.Text = Mid(txtOutput.Text, 1, lngNextWord - 1) & strResult & " " & Right(txtOutput.Text, Len(txtOutput.Text) - lngNextWord + 1)
-                End If
-                    
-                txtOutput.SelStart = Len(txtOutput.Text) 'Set cursor at the end so the output 'scrolls' with our typing.
-            Else 'Unknown character.
-                
-                If KeyAscii > 26 Then
-                    If Not PlayedUnknownKeySound Then
-                        SystemSound_Play ceSystemSoundDefault
-                        PlayedUnknownKeySound = True
+                        lngNextWord = GetPhoneticWordStart(txtInput.SelStart + 1)
+                        txtOutput.Text = Mid(txtOutput.Text, 1, lngNextWord - 1) & strResult & " " & Right(txtOutput.Text, Len(txtOutput.Text) - lngNextWord + 1)
                     End If
-                End If
                     
-                KeyAscii = 0
+                    txtOutput.SelStart = Len(txtOutput.Text) 'Set cursor at the end so the output 'scrolls' with our typing.
+                Else 'Unknown character.
+                
+                    If KeyAscii > 26 Then
+                        If Not PlayedUnknownKeySound Then
+                            SystemSound_Play ceSystemSoundDefault
+                            PlayedUnknownKeySound = True
+                        End If
+                    End If
+                    
+                    KeyAscii = 0
 
+                End If
             End If
         End If
+    
     End If
 
 End Sub
@@ -1077,7 +1120,7 @@ Private Sub txtInput_KeyUp(ByVal KeyCode As Integer, ByVal Shift As Integer)
 End Sub
 
 Private Sub txtInput_LostFocus()
-    SetEditingState False
+    LetEditingState False
 End Sub
 
 Private Sub txtOutput_KeyPress(ByVal KeyAscii As Integer)
