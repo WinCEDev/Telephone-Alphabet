@@ -197,10 +197,16 @@ Private Const RES_MENUBAR_VIEW_ARRANGEHORIZONTALLY  As Long = 117
 
 Private Const RES_MENUBAR_VIEW_ARRANGEVERTICALLY    As Long = 118
 
+Private Const RES_MENUBAR_VIEW_UPDATEAUTOMATICALLY  As Long = 132
+
+Private Const RES_MENUBAR_VIEW_REFRESH              As Long = 133
+
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 'ToolBar resource string constants.
 
 Private Const RES_TOOLBAR_SAVEAS                    As Long = 119
+
+Private Const RES_TOOLBAR_REFRESH                   As Long = 131
 
 Private Const RES_TOOLBAR_CUT                       As Long = 120
 
@@ -457,9 +463,18 @@ Private Sub InitializeCommandBar()
     objMenuItem.SubItems.Add , "ArrangeVertically", LoadResString(RES_MENUBAR_VIEW_ARRANGEVERTICALLY)
     
     objMenuItem.SubItems.Add , , , cbrMenuSeparator
+    
+    'If we don't store these resource strings in an intermediate variable, the Paste button does not work.
+    'This appears to be a bug with the CommandBar control.
+    Dim strCaption As String
+
+    strCaption = LoadResString(RES_MENUBAR_VIEW_UPDATEAUTOMATICALLY)
         
-    objMenuItem.SubItems.Add , "AutoUpdate", "Update Automatically"
-    objMenuItem.SubItems.Add , "Refresh", "Refresh" & vbTab & "F5"
+    objMenuItem.SubItems.Add , "AutoUpdate", strCaption
+    
+    strCaption = LoadResString(RES_MENUBAR_VIEW_REFRESH)
+    
+    objMenuItem.SubItems.Add , "Refresh", strCaption
 
     ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     'CommandBar Buttons
@@ -484,7 +499,7 @@ Private Sub InitializeCommandBar()
     objButton.Style = cbrSeparator
     
     Set objButton = CommandBar.Controls.Add(cbrButton, "Refresh")
-    'objButton.ToolTip = LoadResString(RES_TOOLBAR_refresh) 'TODO: Localize.
+    objButton.ToolTip = LoadResString(RES_TOOLBAR_REFRESH)
     objButton.Image = TOOLBAR_ICON_REFRESH
 
     Set objButton = CommandBar.Controls.Add(cbrButton)
@@ -559,6 +574,7 @@ Private Sub LetActualFontSize(ByVal NewActualFontSize As Long)
     txtOutput.Font.Size = ActualFontSize * ZoomLevel
 End Sub
 
+'This sets auto update state to enabled or disabled.
 Private Sub LetAutoUpdateState(ByVal State As Boolean)
 
     Dim objAutoUpdateMenuItem As CommandbarLib.Item
@@ -566,6 +582,10 @@ Private Sub LetAutoUpdateState(ByVal State As Boolean)
     Set objAutoUpdateMenuItem = CommandBar.Controls("Menu").Items("View").SubItems("AutoUpdate")
 
     objAutoUpdateMenuItem.Checked = State
+    
+    If State Then
+        Revalidate
+    End If
 
     AutoUpdate = State
 
@@ -801,6 +821,7 @@ Private Sub CommandBar_ButtonClick(ByRef Button As CommandbarLib.CommandBarButto
     MenuOrToolbarAction Button.Key
 End Sub
 
+'This is a helper function to easily call RevalidateInput.
 Private Sub Revalidate()
 
     Dim strInput  As String
@@ -854,7 +875,7 @@ Private Sub CommandBar_MenuClick(ByRef Item As CommandbarLib.Item)
     MenuOrToolbarAction Item.Key
 End Sub
 
-Private Sub Form_KeyDown(ByVal KeyCode As Integer, ByVal Shift As Integer)
+Private Sub Form_KeyDown(ByRef KeyCode As Integer, ByRef Shift As Integer)
 
     'Constants missing from eVB.
     Const vbCtrlMask = 2
@@ -908,6 +929,16 @@ Private Sub Form_KeyDown(ByVal KeyCode As Integer, ByVal Shift As Integer)
                 
                     AdjustZoomLevel ceZoomDirectionOut
 
+            End Select
+            
+        Case Else
+            
+            Select Case KeyCode
+            
+                Case vbKeyF5
+                
+                    Revalidate
+                
             End Select
 
     End Select
