@@ -239,8 +239,6 @@ Private Const RES_EXPORT_OUTPUT                     As Long = 129
 
 Private Const RES_ERR_MISSINGLANGUAGEFILES          As Long = 130
 
-Private Const RES_ERR_MISSINGTOOLBARBITMAP          As Long = 131
-
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 'Taskbar icon index constants.
 
@@ -285,17 +283,15 @@ Private ActualFontSize                              As Long 'Contains the actual
 
 Private WasTyped                                    As Boolean 'Contains if the latest change to the TextBox was a typed character as opposed to being pasted.
 
-Private OldSelStart                                 As Long 'Contains the old selection start.
-
 Private OldLength                                   As Long 'Contains the old length of the text before a paste action, used to determine where to put the cursor after text revalidation.
 
-Private PlayedUnknownKeySound                       As Boolean 'This is so we only play the system sound once if the user keeps holding an unknown key.
+Private PlayedUnknownKeySound                       As Boolean 'This is here so we only play the system sound once if the user keeps holding an unknown key.
 
 Private LanguageFiles                               As Variant 'Represents loaded language files.
 
 Private SelectedLanguage                            As Long 'Represents the index of the selected language.
 
-Private Loaded                                      As Boolean 'This is so we can detect the form has fully loaded so we don't erroneously load things too early.
+Private Loaded                                      As Boolean 'This is here so we can detect the form has fully loaded so we don't erroneously load things too early.
 
 Private SmallImageList                              As Long 'Holds the small image list handle used by this form.
 
@@ -911,12 +907,6 @@ Private Sub Form_KeyDown(ByRef KeyCode As Integer, ByRef Shift As Integer)
                     TextBoxHelpers_Copy txtInput
                 
                 Case vbKeyV
-                
-                    Dim strContent As String
-
-                    strContent = Clipboard.GetText
-                
-                    Dim strResult As String
 
                     OldLength = Len(txtInput.Text)
                     TextBoxHelpers_Paste txtInput
