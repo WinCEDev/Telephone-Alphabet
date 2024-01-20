@@ -1,0 +1,1161 @@
+VERSION 5.00
+Object = "{A32A88B3-817C-11D1-A762-00AA0044064C}#1.0#0"; "mscecomdlg.dll"
+Object = "{25C953A7-5464-11D1-A714-00AA0044064C}#1.0#0"; "MSCEFILE.DLL"
+Object = "{BE67ABF5-0137-11D2-9B8A-00C04FAD5AEC}#1.0#0"; "mscecommandbar.dll"
+Begin VB.Form MainForm 
+   BorderStyle     =   0  'None
+   Caption         =   "Telephone Alphabet"
+   ClientHeight    =   5415
+   ClientLeft      =   -60
+   ClientTop       =   -120
+   ClientWidth     =   8760
+   KeyPreview      =   -1  'True
+   ScaleHeight     =   5415
+   ScaleWidth      =   8760
+   ShowInTaskbar   =   0   'False
+   WindowState     =   2  'Maximized
+   Begin FILECTLCtl.FileSystem FileSystem 
+      Left            =   0
+      Top             =   4440
+      _cx             =   2200
+      _cy             =   1400
+   End
+   Begin CEComDlgCtl.CommonDialog CommonDialog 
+      Left            =   2040
+      Top             =   4440
+      _cx             =   847
+      _cy             =   847
+      CancelError     =   0   'False
+      Color           =   0
+      DefaultExt      =   ""
+      DialogTitle     =   ""
+      FileName        =   ""
+      Filter          =   ""
+      FilterIndex     =   0
+      Flags           =   0
+      HelpCommand     =   0
+      HelpContext     =   ""
+      HelpFile        =   ""
+      InitDir         =   ""
+      MaxFileSize     =   256
+      FontBold        =   0   'False
+      FontItalic      =   0   'False
+      FontName        =   ""
+      FontSize        =   10
+      FontUnderline   =   0   'False
+      Max             =   0
+      Min             =   0
+      FontStrikethru  =   0   'False
+   End
+   Begin FILECTLCtl.File File 
+      Left            =   1320
+      Top             =   4440
+      _cx             =   1000
+      _cy             =   1000
+   End
+   Begin CommandbarLib.CommandBar CommandBar 
+      Height          =   345
+      Left            =   0
+      TabIndex        =   0
+      Top             =   0
+      Width           =   3735
+      _cx             =   6588
+      _cy             =   600
+      Enabled         =   -1  'True
+      OKButton        =   0   'False
+      HelpButton      =   -1  'True
+      CloseButton     =   -1  'True
+   End
+   Begin VBCE.TextBox txtOutput 
+      Height          =   1935
+      Left            =   0
+      TabIndex        =   2
+      Top             =   2400
+      Width           =   8775
+      _cx             =   15478
+      _cy             =   3413
+      Appearance      =   1
+      BackColor       =   -2147483633
+      BorderStyle     =   1
+      Enabled         =   -1  'True
+      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
+         Name            =   "Tahoma"
+         Size            =   15.75
+         Charset         =   0
+         Weight          =   400
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      ForeColor       =   -2147483640
+      Text            =   ""
+      Alignment       =   0
+      HideSelection   =   0   'False
+      Locked          =   -1  'True
+      MaxLength       =   0
+      MultiLine       =   -1  'True
+      PasswordChar    =   ""
+      ScrollBars      =   2
+   End
+   Begin VBCE.TextBox txtInput 
+      Height          =   2055
+      Left            =   0
+      TabIndex        =   1
+      Top             =   360
+      Width           =   8775
+      _cx             =   15478
+      _cy             =   3625
+      Appearance      =   1
+      BackColor       =   -2147483643
+      BorderStyle     =   1
+      Enabled         =   -1  'True
+      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
+         Name            =   "Tahoma"
+         Size            =   15.75
+         Charset         =   0
+         Weight          =   400
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      ForeColor       =   -2147483640
+      Text            =   ""
+      Alignment       =   0
+      HideSelection   =   -1  'True
+      Locked          =   0   'False
+      MaxLength       =   0
+      MultiLine       =   -1  'True
+      PasswordChar    =   ""
+      ScrollBars      =   2
+   End
+End
+Attribute VB_Name = "MainForm"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Explicit
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'Window arrangement 'enumeration'.
+
+Private Const ceArrangeHorizontally                 As Long = 0
+
+Private Const ceArrangeVertically                   As Long = 1
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'Zoom direction 'enumeration'.
+Private Const ceZoomDirectionIn                     As Long = 0
+
+Private Const ceZoomDirectionOut                    As Long = 1
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'Zoom level 'enumeration'.
+Private Const ceDefaultZoomLevel                    As Single = 1
+
+Private Const ceZoomAmount                          As Single = 0.1
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'MenuBar resource string constants.
+
+'File
+Private Const RES_MENUBAR_FILE                      As Long = 101
+
+Private Const RES_MENUBAR_FILE_SAVEAS               As Long = 102
+
+Private Const RES_MENUBAR_FILE_EXIT                 As Long = 103
+
+'Edit
+Private Const RES_MENUBAR_EDIT                      As Long = 104
+
+Private Const RES_MENUBAR_EDIT_UNDO                 As Long = 105
+
+Private Const RES_MENUBAR_EDIT_CUT                  As Long = 106
+
+Private Const RES_MENUBAR_EDIT_COPY                 As Long = 107
+
+Private Const RES_MENUBAR_EDIT_PASTE                As Long = 108
+
+Private Const RES_MENUBAR_EDIT_CLEAR                As Long = 109
+
+Private Const RES_MENUBAR_EDIT_SELECTALL            As Long = 110
+
+Private Const RES_MENUBAR_EDIT_FONT                 As Long = 111
+
+'View
+Private Const RES_MENUBAR_VIEW                      As Long = 112
+
+Private Const RES_MENUBAR_VIEW_ZOOM                 As Long = 113
+
+Private Const RES_MENUBAR_VIEW_ZOOM_ZOOMIN          As Long = 114
+
+Private Const RES_MENUBAR_VIEW_ZOOM_ZOOMOUT         As Long = 115
+
+Private Const RES_MENUBAR_VIEW_ZOOM_RESTOREDEFAULTS As Long = 116
+
+Private Const RES_MENUBAR_VIEW_ARRANGEHORIZONTALLY  As Long = 117
+
+Private Const RES_MENUBAR_VIEW_ARRANGEVERTICALLY    As Long = 118
+
+Private Const RES_MENUBAR_VIEW_UPDATEAUTOMATICALLY  As Long = 132
+
+Private Const RES_MENUBAR_VIEW_REFRESH              As Long = 133
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'ToolBar resource string constants.
+
+Private Const RES_TOOLBAR_SAVEAS                    As Long = 119
+
+Private Const RES_TOOLBAR_REFRESH                   As Long = 131
+
+Private Const RES_TOOLBAR_CUT                       As Long = 120
+
+Private Const RES_TOOLBAR_COPY                      As Long = 121
+
+Private Const RES_TOOLBAR_PASTE                     As Long = 122
+
+Private Const RES_TOOLBAR_UNDO                      As Long = 123
+
+Private Const RES_TOOLBAR_ARRANGEHORIZONTALLY       As Long = 124
+
+Private Const RES_TOOLBAR_ARRANGEVERTICALLY         As Long = 125
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'Common Dialog resource string constants.
+
+Private Const RES_CDIALOG_FILTER_TEXTFILES          As Long = 126
+
+Private Const RES_CDIALOG_FILTER_ALLFILES           As Long = 127
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'Output File resource string constants.
+
+Private Const RES_EXPORT_INPUT                      As Long = 128
+
+Private Const RES_EXPORT_OUTPUT                     As Long = 129
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'Error Dialog resource string constants.
+
+Private Const RES_ERR_MISSINGLANGUAGEFILES          As Long = 130
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'Taskbar icon index constants.
+
+Private Const TASKBAR_ICON_SMALL                    As Long = 0 'From "icons_small.bmp".
+
+Private Const TASKBAR_ICON_LARGE                    As Long = 0 'From "icons_large.bmp".
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'ToolBar icon index constants.
+
+Private Const TOOLBAR_ICON_SAVE                     As Long = 1
+
+Private Const TOOLBAR_ICON_CUT                      As Long = 2
+
+Private Const TOOLBAR_ICON_COPY                     As Long = 3
+
+Private Const TOOLBAR_ICON_PASTE                    As Long = 4
+
+Private Const TOOLBAR_ICON_UNDO                     As Long = 5
+
+Private Const TOOLBAR_ICON_REFRESH                  As Long = 6
+
+Private Const TOOLBAR_ICON_ARRANGEHORIZONTALLY      As Long = 7
+
+Private Const TOOLBAR_ICON_ARRANGEVERTICALLY        As Long = 8
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'Settings constants.
+
+Private Const SETTINGS_KEY                          As String = "Settings"
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'Class-level variables.
+
+Private ZoomLevel                                   As Long 'Contains the current zoom level.
+
+Private Arrangement                                 As Long 'Contains the current TextBox arrangement.
+
+Private AutoUpdate                                  As Boolean 'Should the output automatically update?
+
+Private ActualFontSize                              As Long 'Contains the actual font size (without zoom factor).
+
+Private WasTyped                                    As Boolean 'Contains if the latest change to the TextBox was a typed character as opposed to being pasted.
+
+Private OldLength                                   As Long 'Contains the old length of the text before a paste action, used to determine where to put the cursor after text revalidation.
+
+Private PlayedUnknownKeySound                       As Boolean 'This is here so we only play the system sound once if the user keeps holding an unknown key.
+
+Private LanguageFiles                               As Variant 'Represents loaded language files.
+
+Private SelectedLanguage                            As Long 'Represents the index of the selected language.
+
+Private Loaded                                      As Boolean 'This is here so we can detect the form has fully loaded so we don't erroneously load things too early.
+
+Private SmallImageList                              As Long 'Holds the small image list handle used by this form.
+
+Private SmallTaskbarIcon                            As Long 'Holds the small taskbar icon handle.
+
+Private LargeImageList                              As Long 'Holds the large image list handle used by this form.
+
+Private LargeTaskbarIcon                            As Long 'Holds the large taskbar icon handle.
+
+'This function adjusts the zoom level.
+Private Function AdjustZoomLevel(ByVal Direction As Long) As Long
+
+    Select Case Direction
+
+        Case ceZoomDirectionIn
+
+            If CSng(ZoomLevel) <> 5 Then
+
+                ZoomLevel = ZoomLevel + ceZoomAmount
+                
+            Else
+            
+                SystemSound_Play ceSystemSoundDefault
+            
+            End If
+
+        Case ceZoomDirectionOut
+        
+            If CSng(ZoomLevel) <> 0.1 Then
+
+                ZoomLevel = ZoomLevel - ceZoomAmount
+                
+            Else
+            
+                SystemSound_Play ceSystemSoundDefault
+            
+            End If
+
+    End Select
+
+    txtInput.Font.Size = ZoomLevel * ActualFontSize
+    txtOutput.Font.Size = ZoomLevel * ActualFontSize
+
+    AdjustZoomLevel = ZoomLevel
+
+End Function
+
+'This function is responsible for enumerating available language files on the device.
+Private Function FindLanguageFiles() As Boolean
+
+    Dim strPath As String
+
+    strPath = FileSystem.Dir(PathHelpers_AddPathSeparator(App.Path) & "*.tsv", fsAttrNormal)
+    
+    If LenB(strPath) <> 0 Then
+    
+        Dim lngCount As Long
+
+        lngCount = 0
+        
+        ReDim LanguageFiles(lngCount)
+        
+        LanguageFiles(lngCount) = Phonetic_Create(File, PathHelpers_AddPathSeparator(App.Path) & strPath, PathHelpers_RemoveExtension(strPath))
+    
+        Do While True
+        
+            strPath = FileSystem.Dir
+
+            If LenB(strPath) <> 0 Then
+                lngCount = lngCount + 1
+                ReDim Preserve LanguageFiles(lngCount)
+                LanguageFiles(lngCount) = Phonetic_Create(File, PathHelpers_AddPathSeparator(App.Path) & strPath, PathHelpers_RemoveExtension(strPath))
+            Else
+
+                Exit Do
+
+            End If
+
+        Loop
+        
+        FindLanguageFiles = True
+
+    End If
+    
+End Function
+
+'This gets the start location of a phonetic word in the output TextBox given the cursor location in the input TextBox.
+Private Function GetPhoneticWordStart(ByVal Index As Long) As Long
+
+    'First check if we can take a shortcut.
+
+    If Index = 1 Then
+        GetPhoneticWordStart = 1
+    ElseIf Index = Len(txtInput.Text) + 1 Then
+        GetPhoneticWordStart = InStrRev(txtOutput.Text, " ")
+    Else
+
+        Dim lngPos As Long
+
+        lngPos = 1
+
+        Dim i As Long
+
+        For i = 2 To Index 'Must be word 2 or higher.
+
+            Dim lngNewPos As Long
+
+            lngNewPos = InStr(lngPos, txtOutput.Text, " ")
+            lngPos = lngNewPos + 1
+
+        Next
+
+        GetPhoneticWordStart = lngPos
+
+    End If
+
+End Function
+
+'This initializes the CommandBar.
+Private Sub InitializeCommandBar()
+
+    CommandBar.ImageList = SmallImageList
+
+    Dim objMenuBar As CommandBarMenuBar
+
+    Set objMenuBar = CommandBar.Controls.Add(cbrMenuBar, "Menu")
+
+    Dim objMenuItem As CommandbarLib.Item, objSubMenuItem As CommandbarLib.Item
+
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    'File Menu
+    Set objMenuItem = objMenuBar.Items.Add(, "File", LoadResString(RES_MENUBAR_FILE))
+
+    objMenuItem.SubItems.Add , "SaveAs", LoadResString(RES_MENUBAR_FILE_SAVEAS)
+    objMenuItem.SubItems.Add , , , cbrMenuSeparator
+    objMenuItem.SubItems.Add , "Exit", LoadResString(RES_MENUBAR_FILE_EXIT)
+
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    'Edit Menu
+    Set objMenuItem = objMenuBar.Items.Add(, "Edit", LoadResString(RES_MENUBAR_EDIT))
+
+    objMenuItem.SubItems.Add , "Undo", LoadResString(RES_MENUBAR_EDIT_UNDO)
+    objMenuItem.SubItems.Add , , , cbrMenuSeparator
+    objMenuItem.SubItems.Add , "Cut", LoadResString(RES_MENUBAR_EDIT_CUT)
+    objMenuItem.SubItems.Add , "Copy", LoadResString(RES_MENUBAR_EDIT_COPY)
+    objMenuItem.SubItems.Add , "Paste", LoadResString(RES_MENUBAR_EDIT_PASTE)
+    objMenuItem.SubItems.Add , "Clear", LoadResString(RES_MENUBAR_EDIT_CLEAR)
+    objMenuItem.SubItems.Add , "SelectAll", LoadResString(RES_MENUBAR_EDIT_SELECTALL)
+    objMenuItem.SubItems.Add , , , cbrMenuSeparator
+    objMenuItem.SubItems.Add , "Font", LoadResString(RES_MENUBAR_EDIT_FONT)
+
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    'View Menu
+    Set objMenuItem = objMenuBar.Items.Add(, "View", LoadResString(RES_MENUBAR_VIEW))
+    
+    Set objSubMenuItem = objMenuItem.SubItems.Add(, "Zoom", LoadResString(RES_MENUBAR_VIEW_ZOOM))
+    
+    objSubMenuItem.SubItems.Add , "ZoomIn", LoadResString(RES_MENUBAR_VIEW_ZOOM_ZOOMIN)
+    objSubMenuItem.SubItems.Add , "ZoomOut", LoadResString(RES_MENUBAR_VIEW_ZOOM_ZOOMOUT)
+    objSubMenuItem.SubItems.Add , "ZoomRestoreDefaults", LoadResString(RES_MENUBAR_VIEW_ZOOM_RESTOREDEFAULTS)
+    
+    objMenuItem.SubItems.Add , , , cbrMenuSeparator
+
+    objMenuItem.SubItems.Add , "ArrangeHorizontally", LoadResString(RES_MENUBAR_VIEW_ARRANGEHORIZONTALLY)
+    objMenuItem.SubItems.Add , "ArrangeVertically", LoadResString(RES_MENUBAR_VIEW_ARRANGEVERTICALLY)
+    
+    objMenuItem.SubItems.Add , , , cbrMenuSeparator
+    
+    'If we don't store these resource strings in an intermediate variable, the Paste button does not work.
+    'This appears to be a bug with the CommandBar control.
+    Dim strCaption As String
+
+    strCaption = LoadResString(RES_MENUBAR_VIEW_UPDATEAUTOMATICALLY)
+        
+    objMenuItem.SubItems.Add , "AutoUpdate", strCaption
+    
+    strCaption = LoadResString(RES_MENUBAR_VIEW_REFRESH)
+    
+    objMenuItem.SubItems.Add , "Refresh", strCaption
+
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    'CommandBar Buttons
+
+    Dim objButton As CommandBarButton
+
+    Set objButton = CommandBar.Controls.Add(cbrButton)
+    objButton.Style = cbrSeparator
+
+    Dim objCombo As CommandBarComboBox
+
+    Set objCombo = CommandBar.Controls.Add(cbrComboBox, "Language")
+
+    Set objButton = CommandBar.Controls.Add(cbrButton)
+    objButton.Style = cbrSeparator
+
+    Set objButton = CommandBar.Controls.Add(cbrButton, "SaveAs")
+    objButton.ToolTip = LoadResString(RES_TOOLBAR_SAVEAS)
+    objButton.Image = TOOLBAR_ICON_SAVE
+
+    Set objButton = CommandBar.Controls.Add(cbrButton)
+    objButton.Style = cbrSeparator
+    
+    Set objButton = CommandBar.Controls.Add(cbrButton, "Refresh")
+    objButton.ToolTip = LoadResString(RES_TOOLBAR_REFRESH)
+    objButton.Image = TOOLBAR_ICON_REFRESH
+
+    Set objButton = CommandBar.Controls.Add(cbrButton)
+    objButton.Style = cbrSeparator
+
+    Set objButton = CommandBar.Controls.Add(cbrButton, "Cut")
+    objButton.ToolTip = LoadResString(RES_TOOLBAR_CUT)
+    objButton.Image = TOOLBAR_ICON_CUT
+
+    Set objButton = CommandBar.Controls.Add(cbrButton, "Copy")
+    objButton.ToolTip = LoadResString(RES_TOOLBAR_COPY)
+    objButton.Image = TOOLBAR_ICON_COPY
+
+    Set objButton = CommandBar.Controls.Add(cbrButton, "Paste")
+    objButton.ToolTip = LoadResString(RES_TOOLBAR_PASTE)
+    objButton.Image = TOOLBAR_ICON_PASTE
+
+    Set objButton = CommandBar.Controls.Add(cbrButton)
+    objButton.Style = cbrSeparator
+
+    Set objButton = CommandBar.Controls.Add(cbrButton, "Undo")
+    objButton.ToolTip = LoadResString(RES_TOOLBAR_UNDO)
+    objButton.Image = TOOLBAR_ICON_UNDO
+
+    Set objButton = CommandBar.Controls.Add(cbrButton)
+    objButton.Style = cbrSeparator
+
+    Set objButton = CommandBar.Controls.Add(cbrButton, "ArrangeHorizontally")
+    objButton.ToolTip = LoadResString(RES_TOOLBAR_ARRANGEHORIZONTALLY)
+    objButton.Style = cbrButtonGroup
+    objButton.Image = TOOLBAR_ICON_ARRANGEHORIZONTALLY
+
+    Set objButton = CommandBar.Controls.Add(cbrButton, "ArrangeVertically")
+    objButton.ToolTip = LoadResString(RES_TOOLBAR_ARRANGEVERTICALLY)
+    objButton.Style = cbrButtonGroup
+    objButton.Image = TOOLBAR_ICON_ARRANGEVERTICALLY
+
+End Sub
+
+'This initializes the language ComboBox.
+Private Sub InitializeLanguageCombo()
+
+    Dim comCombo As CommandBarComboBox
+
+    Set comCombo = CommandBar.Controls("Language")
+    
+    Dim i As Long
+    
+    For i = 0 To UBound(LanguageFiles)
+        comCombo.AddItem LanguageFiles(i)(phLanguage)
+    Next
+
+    comCombo.Style = cbrComboDropDownList
+    comCombo.Width = 1250
+    comCombo.ListIndex = 0
+    
+    CommandBar_ComboBoxClick comCombo
+
+End Sub
+
+'This initializes the Save As dialog.
+Private Sub InitializeSaveAsDialog()
+    CommonDialog.Filter = LoadResString(RES_CDIALOG_FILTER_TEXTFILES) & " (*.txt)|*.txt|" & LoadResString(RES_CDIALOG_FILTER_ALLFILES) & " (*.*)|*.*"
+    CommonDialog.DefaultExt = "txt"
+    CommonDialog.CancelError = True
+End Sub
+
+'This sets the actual font size (without zoom factor).
+Private Sub LetActualFontSize(ByVal NewActualFontSize As Long)
+    ActualFontSize = NewActualFontSize
+    txtInput.Font.Size = ActualFontSize * ZoomLevel
+    txtOutput.Font.Size = ActualFontSize * ZoomLevel
+End Sub
+
+'This sets auto update state to enabled or disabled.
+Private Sub LetAutoUpdateState(ByVal State As Boolean)
+
+    Dim objAutoUpdateMenuItem As CommandbarLib.Item
+
+    Set objAutoUpdateMenuItem = CommandBar.Controls("Menu").Items("View").SubItems("AutoUpdate")
+
+    objAutoUpdateMenuItem.Checked = State
+    
+    If State Then
+        Revalidate
+    End If
+
+    AutoUpdate = State
+
+End Sub
+
+'This sets the window arrangement (horizontal or vertical).
+Private Sub LetArrangement(ByVal NewArrangement As Long)
+
+    If NewArrangement <> Arrangement Then 'Only do something if the new arrangement is different from the current value.
+
+        Dim objArrangeHorizontallyButton As CommandbarLib.CommandBarButton
+
+        Set objArrangeHorizontallyButton = CommandBar.Controls("ArrangeHorizontally")
+
+        Dim objArrangeVerticallyButton As CommandbarLib.CommandBarButton
+
+        Set objArrangeVerticallyButton = CommandBar.Controls("ArrangeVertically")
+
+        Dim objArrangeHorizontallyMenuItem As CommandbarLib.Item
+
+        Set objArrangeHorizontallyMenuItem = CommandBar.Controls("Menu").Items("View").SubItems("ArrangeHorizontally")
+
+        Dim objArrangeVerticallyMenuItem As CommandbarLib.Item
+
+        Set objArrangeVerticallyMenuItem = CommandBar.Controls("Menu").Items("View").SubItems("ArrangeVertically")
+
+        Select Case NewArrangement
+
+            Case ceArrangeHorizontally
+
+                objArrangeHorizontallyButton.Value = cbrPressed
+                objArrangeVerticallyButton.Value = cbrUnPressed
+
+                objArrangeHorizontallyMenuItem.Checked = True
+                objArrangeVerticallyMenuItem.Checked = False
+
+            Case ceArrangeVertically
+
+                objArrangeVerticallyButton.Value = cbrPressed
+                objArrangeHorizontallyButton.Value = cbrUnPressed
+
+                objArrangeVerticallyMenuItem.Checked = True
+                objArrangeHorizontallyMenuItem.Checked = False
+
+        End Select
+
+        Arrangement = NewArrangement
+        
+        Form_Resize
+
+    End If
+
+End Sub
+
+'This sets the zoom level back to the default (1).
+Private Sub LetDefaultZoomLevel()
+
+    ZoomLevel = ceDefaultZoomLevel
+    txtInput.Font.Size = ActualFontSize
+    txtOutput.Font.Size = ActualFontSize
+
+End Sub
+
+'This is called when the user clicks on an option in the MenuBar or ToolBar.
+Private Sub MenuOrToolbarAction(ByVal Key As String)
+
+    Select Case Key
+    
+        Case "SaveAs"
+        
+            On Error Resume Next
+
+            CommonDialog.ShowSave
+
+            If Err.Number = 0 Then
+                SaveFile CommonDialog.FileName
+            End If
+
+            On Error GoTo 0
+            
+            txtInput.SetFocus
+    
+        Case "Undo"
+            TextBoxHelpers_Undo txtInput
+    
+        Case "Cut"
+            TextBoxHelpers_Cut txtInput
+    
+        Case "Copy"
+            TextBoxHelpers_Copy txtInput
+    
+        Case "Paste"
+            OldLength = Len(txtInput.Text)
+            TextBoxHelpers_Paste txtInput
+    
+        Case "SelectAll"
+
+            TextBoxHelpers_SelectAll txtInput
+
+        Case "Clear"
+
+            txtInput.Text = vbNullString
+            txtOutput.Text = vbNullString
+
+        Case "Font"
+        
+            On Error Resume Next
+
+            CommonDialog.ShowFont
+            
+            If Err.Number = 0 Then
+            
+                LetActualFontSize CommonDialog.FontSize
+            
+                txtInput.Font.Name = CommonDialog.FontName
+                txtInput.Font.Bold = CommonDialog.FontBold
+                txtInput.Font.Italic = CommonDialog.FontItalic
+            
+                txtOutput.Font.Name = CommonDialog.FontName
+                txtOutput.Font.Bold = CommonDialog.FontBold
+                txtOutput.Font.Italic = CommonDialog.FontItalic
+
+            End If
+            
+            On Error GoTo 0
+            
+            txtInput.SetFocus
+            LetEditingState True 'txtInput_GotFocus doesn't seem to be raised after Font dialog box closes.
+            
+        Case "ZoomIn"
+        
+            AdjustZoomLevel ceZoomDirectionIn
+        
+        Case "ZoomOut"
+        
+            AdjustZoomLevel ceZoomDirectionOut
+        
+        Case "ZoomRestoreDefaults"
+        
+            LetDefaultZoomLevel
+            
+        Case "AutoUpdate"
+        
+            LetAutoUpdateState Not AutoUpdate
+
+        Case "ArrangeHorizontally"
+        
+            LetArrangement ceArrangeHorizontally
+
+        Case "ArrangeVertically"
+        
+            LetArrangement ceArrangeVertically
+            
+        Case "Refresh"
+        
+            Revalidate
+            
+        Case "Exit"
+            App.End
+
+    End Select
+
+End Sub
+
+'This revalidates both the user's input and visible output.
+'InputResult will contain the revalidated user input.
+'OutputResult will contain the new output.
+Private Sub RevalidateInput(ByVal InputSource As String, _
+                            ByRef InputResult As String, _
+                            ByRef OutputResult As String)
+
+    Dim strResult As String
+
+    Dim i         As Long
+
+    For i = 1 To Len(InputSource)
+
+        Dim strWord As String
+
+        strWord = Phonetic_FromChar(LanguageFiles(SelectedLanguage), AscW(Mid(InputSource, i, 1)))
+
+        If LenB(strWord) <> 0 Then
+            strResult = strResult & Mid(InputSource, i, 1)
+            OutputResult = OutputResult & strWord & " "
+        End If
+
+    Next
+
+    InputResult = strResult
+
+End Sub
+
+'This shows a Save As dialog and saves input and output as a text file.
+Private Sub SaveFile(ByVal FilePath As String)
+
+    Dim strInput  As String
+
+    Dim strOutput As String
+
+    strInput = LoadResString(RES_EXPORT_INPUT) & ":"
+    strOutput = LoadResString(RES_EXPORT_OUTPUT) & ":"
+
+    File.Open FilePath, fsModeOutput, fsAccessWrite, fsLockReadWrite
+    File.LinePrint strInput
+    File.LinePrint String(Len(strInput), "=")
+    File.LinePrint vbNullString
+    File.LinePrint txtInput.Text
+    File.LinePrint vbNullString
+    File.LinePrint strOutput
+    File.LinePrint String(Len(strOutput), "=")
+    File.LinePrint vbNullString
+    File.LinePrint txtOutput.Text
+    File.Close
+
+End Sub
+
+'This sets the editing state.
+Private Sub LetEditingState(ByVal Editable As Boolean)
+
+    CommandBar.Controls("Cut").Enabled = Editable
+    CommandBar.Controls("Paste").Enabled = Editable
+    CommandBar.Controls("Undo").Enabled = Editable
+
+    'TODO: This is broken! There seems to be a bug with setting focus in the eVB MenuBar.
+    'Needs workaround.
+    'CommandBar.Controls("Menu").Items("Edit").SubItems("Cut").Enabled = Editable
+    'CommandBar.Controls("Menu").Items("Edit").SubItems("Paste").Enabled = Editable
+    'CommandBar.Controls("Menu").Items("Edit").SubItems("Clear").Enabled = Editable
+
+End Sub
+
+Private Sub CommandBar_ButtonClick(ByRef Button As CommandbarLib.CommandBarButton)
+    MenuOrToolbarAction Button.Key
+End Sub
+
+'This is a helper function to easily call RevalidateInput.
+Private Sub Revalidate()
+
+    Dim strInput  As String
+
+    Dim strOutput As String
+            
+    RevalidateInput txtInput.Text, strInput, strOutput
+
+    txtInput.Text = strInput
+    txtOutput.Text = strOutput
+End Sub
+
+Private Sub CommandBar_ComboBoxClick(ByRef ComboBox As CommandbarLib.CommandBarComboBox)
+
+    Select Case ComboBox.Key
+
+        Case "Language"
+        
+            If ComboBox.Text <> LanguageFiles(SelectedLanguage)(phLanguage) Then
+            
+                SelectedLanguage = ComboBox.ListIndex
+            
+                If LenB(txtInput.Text) <> 0 Then
+
+                    Revalidate
+
+                End If
+                
+                If Loaded Then
+                    'This cannot be done from the (Query)Unload event because the CommandBar will already be destroyed due to a bug.
+                    'See: https://www.betaarchive.com/wiki/index.php?title=Microsoft_KB_Archive/254792
+                    SaveSetting App.Title, SETTINGS_KEY, "Language", ComboBox.Text
+                End If
+            
+            End If
+            
+            If Loaded Then 'This raises an error if the form isn't fully loaded yet.
+                txtInput.SetFocus
+                txtInput.SelStart = Len(txtInput.Text)
+            End If
+            
+    End Select
+
+End Sub
+
+Private Sub CommandBar_HelpClick()
+    CommonDialog.ShowHelp
+End Sub
+
+Private Sub CommandBar_MenuClick(ByRef Item As CommandbarLib.Item)
+    MenuOrToolbarAction Item.Key
+End Sub
+
+Private Sub Form_KeyDown(ByRef KeyCode As Integer, ByRef Shift As Integer)
+
+    'Constants missing from eVB.
+    Const vbCtrlMask = 2
+
+    Select Case Shift
+
+        Case vbCtrlMask
+
+            Select Case KeyCode
+
+                Case vbKeyS
+                
+                    On Error Resume Next
+
+                    CommonDialog.ShowSave
+
+                    If Err.Number = 0 Then
+                        SaveFile CommonDialog.FileName
+                    End If
+
+                    On Error GoTo 0
+
+                Case vbKeyA
+
+                    TextBoxHelpers_SelectAll txtInput
+                    
+                Case vbKeyX
+                
+                    TextBoxHelpers_Cut txtInput
+                    
+                Case vbKeyC
+                
+                    TextBoxHelpers_Copy txtInput
+                
+                Case vbKeyV
+
+                    OldLength = Len(txtInput.Text)
+                    TextBoxHelpers_Paste txtInput
+                    
+                Case 187, vbKeyAdd 'Plus key on number row or keypad (if available), there is only an intrinsic constant for the keypad.
+                
+                    AdjustZoomLevel ceZoomDirectionIn
+                
+                Case 189, vbKeySubtract 'Minus key on number row or keypad (if available), there is only an intrinsic constant for the keypad.
+                
+                    AdjustZoomLevel ceZoomDirectionOut
+
+            End Select
+            
+        Case Else
+            
+            Select Case KeyCode
+            
+                Case vbKeyF5
+                
+                    Revalidate
+                
+            End Select
+
+    End Select
+
+End Sub
+
+Private Sub Form_Load()
+
+    Dim blnFindLanguageFiles As Boolean
+
+    blnFindLanguageFiles = FindLanguageFiles
+
+    If Not blnFindLanguageFiles Then
+        MsgBox LoadResString(RES_ERR_MISSINGLANGUAGEFILES), vbCritical, App.Title
+        App.End
+    End If
+    
+    'Load image list.
+    SmallImageList = ImageListEx_Create(16, 16, ILC_COLOR Or ILC_MASK)
+    ImageListEx_AddMasked SmallImageList, PathHelpers_AddPathSeparator(App.Path) & "icons_small.bmp", vbMagenta
+    
+    LargeImageList = ImageListEx_Create(32, 32, ILC_COLOR Or ILC_MASK)
+    ImageListEx_AddMasked LargeImageList, PathHelpers_AddPathSeparator(App.Path) & "icons_large.bmp", vbMagenta
+    
+    SmallTaskbarIcon = TaskbarIcon_Let(hwnd, SmallImageList, TASKBAR_ICON_SMALL, tbSmallIcon)
+    LargeTaskbarIcon = TaskbarIcon_Let(hwnd, LargeImageList, TASKBAR_ICON_LARGE, tbLargeIcon)
+    
+    InitializeCommandBar
+    InitializeSaveAsDialog
+    
+    CommonDialog.HelpFile = App.EXEName & ".htm#Main_Contents"
+
+    InitializeLanguageCombo
+    TextBoxHelpers_SetUpperCase txtInput, True
+    
+    Dim strLanguage As String
+
+    strLanguage = GetSetting(App.Title, SETTINGS_KEY, "Language", "English")
+        
+    Dim comCombo As CommandBarComboBox
+
+    Set comCombo = CommandBar.Controls("Language")
+    
+    Dim i As Long
+        
+    For i = 0 To comCombo.ListCount - 1
+        
+        If comCombo.List(i) = strLanguage Then
+            comCombo.ListIndex = i
+            CommandBar_ComboBoxClick comCombo 'Click isn't triggered on ListIndex change like in VB6.
+
+            Exit For
+
+        End If
+        
+    Next
+        
+    ZoomLevel = ceDefaultZoomLevel
+    
+    'Load settings
+    Arrangement = -1 'This is here so we always fully initialize the menu the first time.
+    LetArrangement CLng(GetSetting(App.Title, SETTINGS_KEY, "Arrangement", ceArrangeHorizontally))
+    
+    LetAutoUpdateState CBool(GetSetting(App.Title, SETTINGS_KEY, "AutoUpdate", True))
+    
+    LetActualFontSize GetSetting(App.Title, SETTINGS_KEY, "FontSize", txtInput.Font.Size)
+        
+    CommonDialog.FontName = GetSetting(App.Title, SETTINGS_KEY, "FontName", txtInput.Font.Name)
+    CommonDialog.FontBold = GetSetting(App.Title, SETTINGS_KEY, "FontBold", txtInput.Font.Bold)
+    CommonDialog.FontItalic = GetSetting(App.Title, SETTINGS_KEY, "FontItalic", txtInput.Font.Italic)
+    
+    CommonDialog.FontSize = ActualFontSize
+
+    txtInput.Font.Name = CommonDialog.FontName
+    txtInput.Font.Bold = CommonDialog.FontBold
+    txtInput.Font.Italic = CommonDialog.FontItalic
+    txtInput.Font.Size = CommonDialog.FontSize
+                
+    txtOutput.Font.Name = CommonDialog.FontName
+    txtOutput.Font.Bold = CommonDialog.FontBold
+    txtOutput.Font.Italic = CommonDialog.FontItalic
+    txtOutput.Font.Size = CommonDialog.FontSize
+
+    Loaded = True
+
+End Sub
+
+Private Sub Form_Resize()
+
+    On Error Resume Next
+
+    CommandBar.Move 0, 0, ScaleWidth, CommandBar.Height
+
+    Select Case Arrangement
+
+        Case ceArrangeHorizontally
+
+            txtInput.Move 0, CommandBar.Height, ScaleWidth, ((ScaleHeight - CommandBar.Height) * 0.5)
+            txtOutput.Move 0, (txtInput.Top + txtInput.Height), ScaleWidth, ((ScaleHeight - CommandBar.Height) * 0.5)
+
+        Case ceArrangeVertically
+
+            txtInput.Move 0, CommandBar.Height, (ScaleWidth * 0.5), ScaleHeight - CommandBar.Height
+            txtOutput.Move txtInput.Width, CommandBar.Height, (ScaleWidth * 0.5), ScaleHeight - CommandBar.Height
+
+    End Select
+
+End Sub
+
+Private Sub Form_Unload(ByVal Cancel As Integer)
+
+    SaveSetting App.Title, SETTINGS_KEY, "Arrangement", Arrangement
+    SaveSetting App.Title, SETTINGS_KEY, "AutoUpdate", AutoUpdate
+    SaveSetting App.Title, SETTINGS_KEY, "FontSize", ActualFontSize
+    SaveSetting App.Title, SETTINGS_KEY, "FontName", txtInput.Font.Name
+    SaveSetting App.Title, SETTINGS_KEY, "FontBold", txtInput.Font.Bold
+    SaveSetting App.Title, SETTINGS_KEY, "FontItalic", txtInput.Font.Italic
+    
+    ImageListEx_Destroy SmallImageList
+    ImageListEx_Destroy LargeImageList
+    TaskbarIcon_Destroy SmallTaskbarIcon
+    TaskbarIcon_Destroy LargeTaskbarIcon
+    
+End Sub
+
+Private Sub txtInput_Change()
+
+    If AutoUpdate Then
+    
+        If WasTyped Then
+            WasTyped = False
+        Else
+    
+            Dim lngSelStart    As Long
+    
+            Dim strInput       As String
+
+            Dim strOutput      As String
+        
+            Dim lngOldSelStart As Long
+
+            lngOldSelStart = txtInput.SelStart
+    
+            RevalidateInput txtInput.Text, strInput, strOutput
+
+            txtInput.Text = strInput
+            txtOutput.Text = strOutput
+
+            txtInput.SelStart = lngOldSelStart
+            txtOutput.SelStart = Len(txtOutput.Text) 'Set cursor at the end so the ou tput 'scrolls' with our typing.
+    
+        End If
+    
+    End If
+
+End Sub
+
+Private Sub txtInput_GotFocus()
+    LetEditingState True
+End Sub
+
+Private Sub txtInput_KeyPress(ByRef KeyAscii As Integer) 'By default, eVB declares the KeyAscii value as ByVal, however if changed to ByRef, modifying keystrokes works just as it does in VB6.
+
+    If AutoUpdate Then
+
+        If KeyAscii <> vbKeyBack Then
+            If KeyAscii <> vbKeyEscape Then
+
+                Dim strResult As Long
+
+                strResult = Phonetic_FromChar(LanguageFiles(SelectedLanguage), KeyAscii)
+                
+                If LenB(strResult) <> 0 Then
+                    WasTyped = True
+                    
+                    If txtInput.SelStart = 0 Then
+                        txtOutput.Text = strResult & " " & txtOutput.Text
+                    ElseIf txtInput.SelStart = Len(txtInput.Text) Then
+                        txtOutput.Text = txtOutput.Text & strResult & " "
+                    Else
+
+                        Dim lngNextWord As Long
+
+                        lngNextWord = GetPhoneticWordStart(txtInput.SelStart + 1)
+                        txtOutput.Text = Mid(txtOutput.Text, 1, lngNextWord - 1) & strResult & " " & Right(txtOutput.Text, Len(txtOutput.Text) - lngNextWord + 1)
+                    End If
+                    
+                    txtOutput.SelStart = Len(txtOutput.Text) 'Set cursor at the end so the output 'scrolls' with our typing.
+                Else 'Unknown character.
+                
+                    If KeyAscii > 26 Then
+                        If Not PlayedUnknownKeySound Then
+                            SystemSound_Play ceSystemSoundDefault
+                            PlayedUnknownKeySound = True
+                        End If
+                    End If
+                    
+                    KeyAscii = 0
+
+                End If
+            End If
+        End If
+    
+    End If
+
+End Sub
+
+Private Sub txtInput_KeyUp(ByVal KeyCode As Integer, ByVal Shift As Integer)
+    PlayedUnknownKeySound = False
+End Sub
+
+Private Sub txtInput_LostFocus()
+    LetEditingState False
+End Sub
+
+Private Sub txtOutput_KeyPress(ByVal KeyAscii As Integer)
+
+    If Not PlayedUnknownKeySound Then
+        SystemSound_Play ceSystemSoundDefault
+        PlayedUnknownKeySound = True
+    End If
+
+End Sub
+
+Private Sub txtOutput_KeyUp(ByVal KeyCode As Integer, ByVal Shift As Integer)
+    PlayedUnknownKeySound = False
+End Sub
+
+
+
